@@ -1,4 +1,0 @@
-flask 
-Flask-Mail
-flask_sqlalchemy
-psycopg2-binary
