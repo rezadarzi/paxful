@@ -1,0 +1,84 @@
+Description about some change:
+Because I couldn't run PostgreSQL and web application with one helm chart I use two helm charts.
+the first is related to the official chart of PostgreSQL and I run it with these parameters:
+
+helm install paxful-task \
+  --set global.postgresql.postgresqlDatabase="paxfuldb",global.postgresql.postgresqlUsername="reza",global.postgresql.postgresqlPassword="reza_pass",nameOverride="paxful-db",fullnameOverride="paxful-db-chart",serviceAccount.name="negetive",replication.enabled="true",replication.user="repl_reza",replication.password="repl_reza_pass",replication.readReplicas="1",persistence.enabled="false"\
+    bitnami/postgresql
+
+For the web application, I create a docker image (paxful-app) and put it on the Kubernetes server. then I create a simple chart with these steps:
+1. helm create reza
+2. edit reza/values.yaml
+    image:
+    repository: paxful-app
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+    imagePullSecrets: []
+    nameOverride: "paxful-app"
+    fullnameOverride: "paxful-app-chart"
+
+3. helm install paxful-app-chart reza/ --values reza/values.yaml
+
+Because of my lack of experience in writing a python web application, the section of adding IP address into PostgreSQL has some problems that I couldn't solve.
+I put tow helm charts in GitHub.
+###################################################################################
+###################################################################################
+###################################################################################
+PostgreSQL:
+At first step I install PostgreSQL using this helm chart whit these specifications:
+helm install paxful-task \
+  --set global.postgresql.postgresqlDatabase="paxfuldb",global.postgresql.postgresqlUsername="reza",global.postgresql.postgresqlPassword="reza_pass",nameOverride="paxful-db",fullnameOverride="paxful-db-chart",serviceAccount.name="negetive",replication.enabled="true",replication.user="repl_reza",replication.password="repl_reza_pass",replication.readReplicas="1",persistence.enabled="false"\
+    bitnami/postgresql
+
+as you can see the database will create with these settings:
+database name: paxfuldb
+username: reza
+user password: reza_pass
+also based on the task this command will create one replica for database.
+###################################################################################
+###################################################################################
+###################################################################################
+Web application:
+After creation of database, I write python web application in flask framework that I attached the codes in email.
+When I complete the application, I create Dockerfile and docker image then I put it in my Kubernetes cluster and I create simple helm chart for installing the application.
+###################################################################################
+###################################################################################
+###################################################################################
+Dockerfile:
+# python runtime
+FROM python:3.6
+ 
+# working directory and set ENV
+RUN mkdir /app
+WORKDIR /app
+ENV FLASK_APP=paxful.py
+ 
+# copy current directory into the container
+ADD . /app
+ 
+# install requirements
+RUN pip3.6 install -r requirements.txt
+ 
+# make port 5000 available to the world outside
+EXPOSE 5000
+#CMD ["flask run --host=0.0.0.0"]
+ENTRYPOINT [ "python3.6" ]
+CMD [ "paxful.py" ]
+###################################################################################
+###################################################################################
+###################################################################################
+Helm Chart:
+1. helm create reza
+2. edite values.yaml
+	image:
+		repository: paxful-app
+		pullPolicy: IfNotPresent
+		tag: "latest"
+	imagePullSecrets: []
+	nameOverride: "paxful-app"
+	fullnameOverride: "paxful-app-chart"
+3. helm install paxful-app-chart reza/ --values reza/values.yaml
+
+I attached all files that I work on them.
+
